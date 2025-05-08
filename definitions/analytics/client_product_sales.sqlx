@@ -1,0 +1,25 @@
+config {
+  type: "table",
+  schema: "test",
+  name: "premier_client_product_sales",
+  description: "Number of products sold to Premier Bank clients by VaporViews.",
+  tags: ["metrics"]
+}
+
+SELECT
+  account_number,
+  vaporviews_client_uuid,
+  SUM(CASE WHEN has_personal_loan THEN 1 ELSE 0 END) AS personal_loan_sold,
+  SUM(CASE WHEN has_securities_account THEN 1 ELSE 0 END) AS securities_account_sold,
+  SUM(CASE WHEN has_cd_account THEN 1 ELSE 0 END) AS cd_account_sold,
+  SUM(CASE WHEN has_online_banking THEN 1 ELSE 0 END) AS online_banking_sold,
+  SUM(CASE WHEN has_credit_card THEN 1 ELSE 0 END) AS credit_card_sold,
+  (CASE WHEN has_personal_loan THEN 1 ELSE 0 END +
+   CASE WHEN has_securities_account THEN 1 ELSE 0 END +
+   CASE WHEN has_cd_account THEN 1 ELSE 0 END +
+   CASE WHEN has_online_banking THEN 1 ELSE 0 END +
+   CASE WHEN has_credit_card THEN 1 ELSE 0 END) AS total_products_sold_by_vaporviews
+FROM
+  ${ref("matched_premier_vaporviews_clients")}
+GROUP BY
+  account_number, vaporviews_client_uuid

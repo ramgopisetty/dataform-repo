@@ -1,0 +1,44 @@
+config {
+  type: "table",
+  schema: "aef_landing_sample_dataset",
+  name: "vaporviews_partnership_summary",
+  description: "Summary metrics for assessing VaporViews partnership effectiveness.",
+  tags: ["final_report"]
+}
+
+WITH total_premier_clients AS (
+  SELECT COUNT(DISTINCT account_number) AS total_premier_accounts
+  FROM ${ref("cleaned_premier_transactions")}
+),
+matched_client_summary AS (
+  SELECT
+    COUNT(DISTINCT account_number) AS num_matched_clients,
+    SUM(CASE WHEN has_personal_loan THEN 1 ELSE 0 END) AS personal_loan_upsells,
+    SUM(CASE WHEN has_securities_account THEN 1 ELSE 0 END) AS securities_account_upsells,
+    SUM(CASE WHEN has_cd_account THEN 1 ELSE 0 END) AS cd_account_upsells,
+    SUM(CASE WHEN has_online_banking THEN 1 ELSE 0 END) AS online_banking_upsells,
+    SUM(CASE WHEN has_credit_card THEN 1 ELSE 0 END) AS credit_card_upsells,
+    AVG(q.income) AS avg_income_matched_clients,
+    AVG(q.avg_balance) AS avg_balance_matched_clients,
+    COUNT(DISTINCT CASE WHEN q.client_value_segment = 'High Value' THEN q.account_number ELSE NULL END) AS num_high_value_matched_clients
+  FROM
+    ${ref("matched_premier_vaporviews_clients")} AS m
+  JOIN
+    ${ref("premier_client_quality_assessment")} AS q
+    ON m.account_number = q.account_number
+)
+SELECT
+  m.num_matched_clients,
+  (m.num_matched_clients / t.total_premier_accounts) * 100 AS percent_clients_matched,
+  (m.personal_loan_upsells + m.securities_account_upsells + m.cd_account_upsells + m.online_banking_upsells + m.credit_card_upsells) AS total_upsells_to_premier_clients,
+  m.personal_loan_upsells,
+  m.securities_account_upsells,
+  m.cd_account_upsells,
+  m.online_banking_upsells,
+  m.credit_card_upsells,
+  m.num_high_value_matched_clients,
+  m.avg_income_matched_clients,
+  m.avg_balance_matched_clients
+FROM
+  matched_client_summary AS m,
+  total_premier_clients AS t

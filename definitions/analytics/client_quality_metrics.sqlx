@@ -1,0 +1,29 @@
+config {
+  type: "table",
+  schema: "premier_bank_analytics",
+  name: "premier_client_quality_assessment",
+  description: "Assessment of Premier Bank client quality based on various criteria.",
+  tags: ["metrics"]
+}
+
+SELECT
+  account_number,
+  vaporviews_client_uuid,
+  income,
+  avg_balance,
+  total_transactions,
+  has_mortgage,
+  Education,
+  CASE
+    WHEN income >= 75000 AND avg_balance >= 500000 THEN 'High Value'
+    WHEN income >= 50000 AND avg_balance >= 100000 THEN 'Medium Value'
+    ELSE 'Standard Value'
+  END AS client_value_segment,
+  CASE
+    WHEN has_mortgage = TRUE AND income >= 60000 THEN 1 ELSE 0
+  END AS potential_for_additional_loans_score, -- Example score
+  CASE
+    WHEN Education IN ('Undergraduate', 'Graduate', 'Professional') THEN 1 ELSE 0
+  END AS education_level_score -- Example score
+FROM
+  ${ref("matched_premier_vaporviews_clients")}

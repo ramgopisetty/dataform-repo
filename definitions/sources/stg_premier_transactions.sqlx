@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  schema: "aef_landing_sample_dataset", 
+  name: "raw_transactions", 
+  tags: ["source_data"]
+}
+

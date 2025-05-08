@@ -1,0 +1,34 @@
+config {
+  type: "table",
+  schema: "aef_landing_sample_dataset",
+  name: "cleaned_vaporviews_bank_info",
+  description: "Cleaned demographic information from VaporViews, standardized for analysis.",
+  tags: ["staging"]
+}
+
+SELECT
+  uuid,
+  SAFE_CAST(account_number AS STRING) AS account_number, -- Ensure account_number is string for consistent joining
+  SAFE_CAST(age AS INT64) AS age,
+  Experience,
+  SAFE_CAST(REPLACE(REPLACE(Income, '$', ''), ',', '') AS FLOAT64) AS income, -- Clean income
+  ZIP_Code,
+  SAFE_CAST(Family AS INT64) AS family_size,
+  Education,
+  SAFE_CAST(Mortgage AS BOOL) AS has_mortgage, -- Convert boolean string to actual boolean
+  SAFE_CAST(Personal_Loan AS BOOL) AS has_personal_loan,
+  SAFE_CAST(Securities_Account AS BOOL) AS has_securities_account,
+  SAFE_CAST(CD_Account AS BOOL) AS has_cd_account,
+  SAFE_CAST(Online AS BOOL) AS has_online_banking,
+  SAFE_CAST(Credit_Card AS BOOL) AS has_credit_card,
+  Job,
+  Marital,
+  Housing,
+  Loan,
+  Contact,
+  Name,
+  Last_Name
+FROM
+  ${ref("stg_vaporviews_bank_info")}
+WHERE
+  account_number IS NOT NULL AND account_number != ''; -- Basic data quality filter

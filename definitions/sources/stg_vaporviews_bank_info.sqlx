@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  schema: "aef_landing_sample_dataset", // Replace with the dataset where you loaded the CSV
+  name: "bank_info_csv", // Name of the BigQuery table created from the CSV
+  tags: ["source_data"]
+}

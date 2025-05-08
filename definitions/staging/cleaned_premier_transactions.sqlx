@@ -1,0 +1,20 @@
+config {
+  type: "table",
+  schema: "aef_landing_sample_dataset",
+  name: "cleaned_premier_transactions",
+  description: "Cleaned Premier Bank transaction data, standardized for analysis.",
+  tags: ["staging"]
+}
+
+SELECT
+  transaction_uuid,
+  SAFE_CAST(account_number AS STRING) AS account_number, -- Ensure account_number is string for consistent joining
+  SAFE_CAST(date AS DATE) AS transaction_date,
+  withdrawal_amount,
+  deposit_amount,
+  balance,
+  successful_operation
+FROM
+  ${ref("stg_premier_transactions")}
+WHERE
+  account_number IS NOT NULL AND account_number != ''; -- Basic data quality filter

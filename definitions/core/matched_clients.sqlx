@@ -1,0 +1,44 @@
+config {
+  type: "table",
+  schema: "aef_landing_sample_dataset",
+  name: "matched_premier_vaporviews_clients",
+  description: "Premier Bank clients matched with VaporViews' client data.",
+  tags: ["analysis_core"]
+}
+
+SELECT
+  t.account_number,
+  v.uuid AS vaporviews_client_uuid,
+  v.age,
+  v.income,
+  v.ZIP_Code,
+  v.has_personal_loan,
+  v.has_securities_account,
+  v.has_cd_account,
+  v.has_online_banking,
+  v.has_credit_card,
+  v.Education,
+  v.Job,
+  v.Marital,
+  v.Housing,
+  v.Loan,
+  v.Contact,
+  v.Name AS vaporviews_client_name,
+  v.Last_Name AS vaporviews_client_last_name,
+  COUNT(DISTINCT t.transaction_uuid) AS total_transactions,
+  SUM(t.deposit_amount) AS total_deposits,
+  SUM(t.withdrawal_amount) AS total_withdrawals,
+  AVG(t.balance) AS avg_balance,
+  MAX(t.transaction_date) AS last_transaction_date,
+  MIN(t.transaction_date) AS first_transaction_date
+FROM
+  ${ref("cleaned_premier_transactions")} AS t
+JOIN
+  ${ref("cleaned_vaporviews_bank_info")} AS v
+  ON t.account_number = v.account_number
+GROUP BY
+  t.account_number,
+  v.uuid, v.age, v.income, v.ZIP_Code, v.has_personal_loan,
+  v.has_securities_account, v.has_cd_account, v.has_online_banking,
+  v.has_credit_card, v.Education, v.Job, v.Marital, v.Housing,
+  v.Loan, v.Contact, v.Name, v.Last_Name
